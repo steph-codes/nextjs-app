@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Node.js app to Azure Web App - test-next
+name: Build and deploy Next.js app to Azure Web App - test-next
 
 on:
   push:
@@ -11,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -21,16 +18,22 @@ jobs:
         with:
           node-version: '16.x'
 
-      - name: npm install, build, and test
+      - name: npm install and build
         run: |
           npm install
-          npm run build --if-present
-          npm run test --if-present
-      
+          npm run build
+        # Note: You may have to adjust the build command to match your Next.js project setup
+
+      # Optionally, you can run tests before deployment
+      - name: npm test
+        run: |
+          npm test
+        # Adjust this command to run your tests as needed
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
-          name: node-app
+          name: next-app
           path: .
 
   deploy:
@@ -44,7 +47,16 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v2
         with:
-          name: node-app
+          name: next-app
+
+      - name: Install pm2 (optional, for running Next.js in production)
+        run: |
+          npm install pm2 -g
+
+      - name: Start Next.js app with SSR using pm2
+        run: |
+          npm install
+          pm2 start npm --name "next-app" -- start
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
